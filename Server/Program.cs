@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.HttpLogging;
+using System.Net;
 
 namespace Server
 {
@@ -9,22 +11,36 @@ namespace Server
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("Start Application");
+
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddAuthentication();
-
-
-            var app = builder.Build();
-             
-
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
             });
 
-            app.UseAuthentication();
+            builder.Services.AddHttpLogging(options =>
+            {
+                options.LoggingFields = HttpLoggingFields.RequestPropertiesAndHeaders;
+            });
+             
 
-            app.MapGet("/", () => "Hello ForwardedHeadersOptions!");
+            var app = builder.Build();
+
+            app.UseForwardedHeaders();
+            app.UseHttpLogging();
+
+           
+
+            app.MapGet("/", () =>
+            {
+                Console.WriteLine("Hello ForwardedHeadersOptions!");
+                return "Hello ForwardedHeadersOptions!";
+            });
+             
 
             app.Run();
         }

@@ -20,8 +20,12 @@ services:
     volumes: 
       #- ./client/dist:/usr/share/nginx/html 
       - ./.docker/nginx/nginx.conf:/etc/nginx/nginx.conf 
-      #- ./.docker/nginx/proxy.conf:/etc/nginx/proxy.conf  
+      #- ./.docker/nginx/proxy.conf:/etc/nginx/proxy.conf 
+      - ./.docker/nginx/templates:/etc/nginx/templates
     ports:
-      - 8080:80
+      - 8080:80 
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=80
     links:
       - server:server
